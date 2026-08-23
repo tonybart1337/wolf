@@ -43,16 +43,14 @@ RUN --mount=type=cache,target=/root/.cargo/registry \
     cargo install cargo-c@0.10.23 --locked
 
 WORKDIR /tmp/
-COPY docker/gst-wayland-display-explicit-sync.patch /tmp/
 RUN --mount=type=cache,target=/root/.cargo/registry \
     --mount=type=cache,target=/root/.cargo/git <<_GST_WAYLAND_DISPLAY
     #!/bin/bash
     set -e
 
-    git clone https://github.com/games-on-whales/gst-wayland-display
+    git clone https://github.com/tonybart1337/gst-wayland-display
     cd gst-wayland-display
-    git checkout b15285a
-    git apply /tmp/gst-wayland-display-explicit-sync.patch
+    git checkout fde7a1b6e4312ccbc55e5984c2d0b1deb174f696
     cargo cinstall \
         --features="cuda" \
         --prefix=/usr/local/lib/x86_64-linux-gnu/ \
