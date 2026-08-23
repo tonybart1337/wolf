@@ -50,7 +50,7 @@ RUN --mount=type=cache,target=/root/.cargo/registry \
 
     git clone https://github.com/tonybart1337/gst-wayland-display
     cd gst-wayland-display
-    git checkout 9fc0766a3131f60cabc645d8178a457084f820d8
+    git checkout 625eb3a26cd8b70c9a62a8642e690495c9340620
     cargo cinstall \
         --features="cuda" \
         --prefix=/usr/local/lib/x86_64-linux-gnu/ \
