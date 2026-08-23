@@ -7,5 +7,6 @@
 !CMakeLists.txt
 !.clang-format
 !docker/gstreamer.control
+!docker/gst-wayland-display-explicit-sync.patch
 !docker/startup.sh
 !docker/supervisord.conf

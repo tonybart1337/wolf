@@ -36,17 +36,27 @@ ARG RUST_VERSION=1.96.0
 ENV RUST_VERSION=$RUST_VERSION
 RUN rustup install $RUST_VERSION && rustup default $RUST_VERSION
 
+# Pinned because it can cause issues when RUST_VERSION isn't the absolute latest.
+# Keep this in a stable layer so compositor source/patch changes don't reinstall it.
+RUN --mount=type=cache,target=/root/.cargo/registry \
+    --mount=type=cache,target=/root/.cargo/git \
+    cargo install cargo-c@0.10.23 --locked
+
 WORKDIR /tmp/
-RUN <<_GST_WAYLAND_DISPLAY
+COPY docker/gst-wayland-display-explicit-sync.patch /tmp/
+RUN --mount=type=cache,target=/root/.cargo/registry \
+    --mount=type=cache,target=/root/.cargo/git <<_GST_WAYLAND_DISPLAY
     #!/bin/bash
     set -e
 
     git clone https://github.com/games-on-whales/gst-wayland-display
     cd gst-wayland-display
     git checkout b15285a
-    # Pinned because it can cause issues when RUST_VERSION isn't the absolute latest
-    cargo install cargo-c@0.10.23 --locked
-    cargo cinstall --features="cuda" --prefix=/usr/local/lib/x86_64-linux-gnu/ --libdir=/usr/local/lib/x86_64-linux-gnu/gstreamer-1.0
+    git apply /tmp/gst-wayland-display-explicit-sync.patch
+    cargo cinstall \
+        --features="cuda" \
+        --prefix=/usr/local/lib/x86_64-linux-gnu/ \
+        --libdir=/usr/local/lib/x86_64-linux-gnu/gstreamer-1.0
 _GST_WAYLAND_DISPLAY
 
 COPY . /wolf/
@@ -55,6 +65,7 @@ WORKDIR /wolf
 ENV CCACHE_DIR=/cache/ccache
 ENV CMAKE_BUILD_DIR=/cache/cmake-build
 RUN --mount=type=cache,target=/cache/ccache \
+    --mount=type=cache,target=/cache/cmake-build \
     cmake -B$CMAKE_BUILD_DIR \
     -DCMAKE_BUILD_TYPE=RelWithDebInfo \
     -DCMAKE_CXX_STANDARD=17 \
